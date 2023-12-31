@@ -8,11 +8,8 @@ import src.server.database as db
 app = Dash(__name__)
 app.layout = html.Div([
     html.H1(children='Dashboard', style={'textAlign':'center'}),
-    dcc.Interval(
-        id='interval-component',
-        interval=5*1000, # in milliseconds
-        n_intervals=0
-    ),
+    dcc.Interval(id='interval-component', interval=5*1000, n_intervals=0),
+    dcc.Interval(id='interval-component-hourly', interval=15*60*1000, n_intervals=0),
     html.H2(children='Number of Hours of Realtime Observations'),
     dcc.Slider(id='slider-number-observations', min=1, max=24, step=1, value=6),
     dcc.Graph(id='graph-humidity'),
@@ -55,7 +52,7 @@ def update_graph_temperature(n, hours_obs):
 
 @callback(
     Output('graph-humidity-hourly', 'figure'),
-    [Input('interval-component', 'n_intervals'),
+    [Input('interval-component-hourly', 'n_intervals'),
     Input('slider-number-observations-hourly', 'value')]
 )
 def update_graph_humidity_hourly(n, n_hours):
@@ -63,7 +60,7 @@ def update_graph_humidity_hourly(n, n_hours):
 
 @callback(
     Output('graph-temperature-hourly', 'figure'),
-    [Input('interval-component', 'n_intervals'),
+    [Input('interval-component-hourly', 'n_intervals'),
     Input('slider-number-observations-hourly', 'value')]
 )
 def update_graph_humidity_hourly(n, n_hours):

@@ -62,11 +62,13 @@ class EObservationFrequency(Enum):
 
 
 class Database:
-    def __init__(self, database_path: str, hourly_buffer_size: int=24*30*60):
+    DT_FORMAT = '%Y-%m-%d %H:%M:%S'
 
+
+    def __init__(self, database_path: str, hourly_buffer_size: int=24*30*60):
         """
-        refresh_rate: int
-            how many observations per hour. default=2 observations per second
+        hourly_buffer_size: int
+            how many hourly observations to keep in the database. default: 24 hours
         """
         self.hourly_buffer_size = hourly_buffer_size
         self.database_path = database_path
@@ -83,7 +85,15 @@ class Database:
         return func.strftime('%Y-%m-%d %H:00:00', func.now())
 
     def _db_timestamp_last_hour(self):
-        return func.now()
+        return func.strftime('%Y-%m-%d %H:00:00', text("(datetime('now', '-1 hour'))"))
+
+    def get_db_current_hour(self) -> datetime:
+        query = self._db_timestamp_current_hour()
+        return datetime.strptime(self.session.query(query).scalar(), Database.DT_FORMAT)
+
+    def get_db_last_hour(self) -> datetime:
+        query = self._db_timestamp_last_hour()
+        return datetime.strptime(self.session.query(query).scalar(), Database.DT_FORMAT)
 
 
     def add_observation(self, humidity: float, temperature: float) -> Iterable[AddDatabaseObservationResult]:
@@ -125,11 +135,11 @@ class Database:
 
 
     def average_last_hour(self, variable: str):
-        now = datetime.now()
-        start_of_last_hour = now.replace(minute=0, second=0, microsecond=0) - timedelta(hours=1)
+        last_hour = self.get_db_last_hour()
+
         average = (self.session.query(func.avg(ObservationRealtime.value))
                             .filter(
-                                ObservationRealtime.date >= start_of_last_hour,
+                                ObservationRealtime.date >= last_hour,
                                 ObservationRealtime.date < func.now(),
                                 ObservationRealtime.variable == variable)
                             .scalar())
@@ -139,7 +149,7 @@ class Database:
         obs_hourly = ObservationHourly(
             variable=variable, 
             value=average, 
-            date=start_of_last_hour
+            date=last_hour
         )
         self.session.add(obs_hourly)
         self.session.commit()
@@ -175,7 +185,7 @@ class Database:
         for hour in hours:
             n_hourly = (self.session.query(ObservationHourly.date)
                                     .filter(ObservationHourly.date == hour)
-                                    .filter(ObservationHourly.date >= func.now() - timedelta(days=-1))
+                                    .filter(ObservationHourly.date >= func.now() - timedelta(days=1))
                                     .count())
             if n_hourly > 0:
                 continue
@@ -189,13 +199,18 @@ class Database:
             observation = ObservationHourly(
                 variable=variable, 
                 value=hour_average, 
-                date=datetime.strptime(hour, '%Y-%m-%d %H:00:00')
+                date=datetime.strptime(hour, Database.DT_FORMAT)
             )
             self.session.add(observation)
 
             res = hour_average
         self.session.commit()
         return res
+
+    def clear_hourly_observations(self, variable):
+        self.session.query(ObservationHourly).filter(ObservationHourly.variable == variable).delete()
+        self.session.commit()
+        
 
 
 
