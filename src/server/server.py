@@ -14,7 +14,7 @@ def main():
     except Exception as e:
         logger.critical(f"Failed to create database: {e}")
 
-    bt_port, baud_rate = 'COM4', 9600
+    bt_port, baud_rate = 'COM6', 9600
     logger.info(f"Starting bluetooth. [PORT: {bt_port}] [BAUD RATE: {baud_rate}]")
     try:
         bluetooth = serial.Serial(bt_port, baud_rate)

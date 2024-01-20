@@ -11,11 +11,11 @@ app.layout = html.Div([
     dcc.Interval(id='interval-component', interval=5*1000, n_intervals=0),
     dcc.Interval(id='interval-component-hourly', interval=15*60*1000, n_intervals=0),
     html.H2(children='Number of Hours of Realtime Observations'),
-    dcc.Slider(id='slider-number-observations', min=1, max=24, step=1, value=6),
+    dcc.Slider(id='slider-number-observations', min=1, max=72, step=1, value=24),
     dcc.Graph(id='graph-humidity'),
     dcc.Graph(id='graph-temperature'),
     html.H2(children='Number of Hours of Hourly Observations'),
-    dcc.Slider(id='slider-number-observations-hourly', min=12, max=240, step=3, value=72),
+    dcc.Slider(id='slider-number-observations-hourly', min=12, max=24*30, step=6, value=72),
     dcc.Graph(id='graph-humidity-hourly'),
     dcc.Graph(id='graph-temperature-hourly'),
 ])

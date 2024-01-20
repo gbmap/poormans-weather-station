@@ -14,6 +14,8 @@ from sqlalchemy.orm import (
     sessionmaker, Session
 )
 
+# TODO: use views to moving avg sensor data (https://github.com/sqlalchemy/sqlalchemy/wiki/Views)
+
 
 #
 #   DATABASE SCHEMA
@@ -91,9 +93,14 @@ class Database:
         query = self._db_timestamp_current_hour()
         return datetime.strptime(self.session.query(query).scalar(), Database.DT_FORMAT)
 
-    def get_db_last_hour(self) -> datetime:
-        query = self._db_timestamp_last_hour()
+    def _query_timestamp(self, query) -> datetime:
         return datetime.strptime(self.session.query(query).scalar(), Database.DT_FORMAT)
+
+    def get_db_last_hour(self) -> datetime:
+        return self._query_timestamp(self._db_timestamp_last_hour())
+
+    def get_db_current_hour(self) -> datetime:
+        return self._query_timestamp(self._db_timestamp_last_hour(), self._db_timestamp_current_hour())
 
 
     def add_observation(self, humidity: float, temperature: float) -> Iterable[AddDatabaseObservationResult]:

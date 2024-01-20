@@ -1,20 +1,15 @@
 
-# src/
 
-## arduino/
+# Poorman's Weather Station 
 
-### pmws.ino
-Arduino code for reading DHT11 temp and humidity, printing to LCD screen and sending data through bluetooth.
+<img src="./imgs/ino.png" style="max-height: 400px"></img>
 
-## server/
+Arduino weather station that reads temperature and humidity from an DHT11 sensor,
+prints it to an LCD display and sends it through bluetooth to a nearby device. Done in about two days.
 
-### server.py
-Reads bluetooth data from serial port COM4 and adds observations to the database.
+There's also an implementation for a server at `src/server/server.py` that reads the data it receives
+and inserts it into a database. It logs all measurements as well as hourly
+averages.
 
-### database.py
-Data model and database utilities.
+A Dash panel at `src/dashboard/main.py` plots both variables' time series.
 
-## dashboard/
-
-### main.py
-Dash panel with graphs.
